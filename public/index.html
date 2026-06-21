@@ -27,41 +27,51 @@
 </head>
 <body>
   <h1>Экран клиента</h1>
-  <div id="status">Загрузка...</div>
+  <div id="status">Подключение...</div>
   <img id="screen" alt="Экран" />
 
   <script>
     const statusEl = document.getElementById("status");
     const screenImg = document.getElementById("screen");
-    const REFRESH_MS = 1000;
 
-    async function refresh() {
-      try {
-        const response = await fetch("/api/screenshot", { cache: "no-store" });
+    let frames = 0;
+    let lastFpsAt = Date.now();
+    let objectUrl = null;
 
-        if (response.status === 404) {
-          statusEl.textContent = "Ожидание первого скриншота...";
-          return;
-        }
+    const wsUrl = `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws?role=viewer`;
+    const ws = new WebSocket(wsUrl);
+    ws.binaryType = "arraybuffer";
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
+    ws.onopen = () => {
+      statusEl.textContent = "Ожидание трансляции...";
+    };
 
-        const blob = await response.blob();
-        screenImg.src = URL.createObjectURL(blob);
-
-        const updatedAt = response.headers.get("X-Updated-At");
-        statusEl.textContent = updatedAt
-          ? `Обновлено: ${new Date(updatedAt).toLocaleString()}`
-          : "Скриншот получен";
-      } catch (error) {
-        statusEl.textContent = "Ошибка загрузки: " + error.message;
+    ws.onmessage = (event) => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
       }
-    }
 
-    refresh();
-    setInterval(refresh, REFRESH_MS);
+      const blob = new Blob([event.data], { type: "image/jpeg" });
+      objectUrl = URL.createObjectURL(blob);
+      screenImg.src = objectUrl;
+
+      frames += 1;
+      const now = Date.now();
+      if (now - lastFpsAt >= 1000) {
+        const fps = (frames / ((now - lastFpsAt) / 1000)).toFixed(1);
+        statusEl.textContent = `FPS: ${fps}`;
+        frames = 0;
+        lastFpsAt = now;
+      }
+    };
+
+    ws.onclose = () => {
+      statusEl.textContent = "Соединение закрыто";
+    };
+
+    ws.onerror = () => {
+      statusEl.textContent = "Ошибка WebSocket";
+    };
   </script>
 </body>
 </html>
