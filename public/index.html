@@ -9,12 +9,21 @@
       font-family: sans-serif;
       max-width: 1200px;
       margin: 24px auto;
-      padding: 0 16px;
+      padding: 3px 15px;
+      background-color: black;
+      background: #111;
     }
 
     #status {
+      margin-bottom: 0px;
+      padding: px 0px;
+      color: #910;
+    }
+    
+    #fpsDisplay {
       margin-bottom: 12px;
-      color: #444;
+      color: #290;
+      padding: 9px 0px;
     }
 
     img {
@@ -22,13 +31,15 @@
       border: 1px solid #ccc;
       background: #111;
       min-height: 240px;
+      padding: 0px 0px;
     }
   </style>
 </head>
 <body>
-  <h1>Экран клиента</h1>
-  <div id="status">Подключение...</div>
+    
+  <div id="status">Нет сигнала</div>
   <img id="screen" alt="Экран" />
+  <div id="fpsDisplay">FPS: ?</div>
 
   <script>
     const statusEl = document.getElementById("status");
@@ -43,7 +54,7 @@
     ws.binaryType = "arraybuffer";
 
     ws.onopen = () => {
-      statusEl.textContent = "Ожидание трансляции...";
+      statusEl.textContent = "Подключение...";
     };
 
     ws.onmessage = (event) => {
@@ -66,11 +77,11 @@
     };
 
     ws.onclose = () => {
-      statusEl.textContent = "Соединение закрыто";
+      statusEl.textContent = "Нет сигнала";
     };
 
-    ws.onerror = () => {
-      statusEl.textContent = "Ошибка WebSocket";
+    ws.onerror = (err) => {
+      statusEl.textContent = err;
     };
   </script>
 </body>
