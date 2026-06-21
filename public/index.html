@@ -17,15 +17,13 @@
     #status {
       margin-bottom: 0px;
       padding: px 0px;
-      color: #910;
+      color: lightgreen;
     }
     
-    #fpsDisplay {
-      margin-bottom: 12px;
-      color: #290;
-      padding: 9px 0px;
+    #empty = {
+        
     }
-
+    
     img {
       width: 100%;
       border: 1px solid #ccc;
@@ -37,10 +35,10 @@
 </head>
 <body>
     
-  <div id="status">Нет сигнала</div>
   <img id="screen" alt="Экран" />
-  <div id="fpsDisplay">FPS: ?</div>
-
+  <div id="empty">ㅤ</div>
+  <div id="status">Нет сигнала</div>
+  
   <script>
     const statusEl = document.getElementById("status");
     const screenImg = document.getElementById("screen");
