@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Screen Share Viewer</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    #status {
+      margin-bottom: 12px;
+      color: #444;
+    }
+
+    img {
+      width: 100%;
+      border: 1px solid #ccc;
+      background: #111;
+      min-height: 240px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Экран клиента</h1>
+  <div id="status">Загрузка...</div>
+  <img id="screen" alt="Экран" />
+
+  <script>
+    const statusEl = document.getElementById("status");
+    const screenImg = document.getElementById("screen");
+    const REFRESH_MS = 1000;
+
+    async function refresh() {
+      try {
+        const response = await fetch("/api/screenshot", { cache: "no-store" });
+
+        if (response.status === 404) {
+          statusEl.textContent = "Ожидание первого скриншота...";
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        screenImg.src = URL.createObjectURL(blob);
+
+        const updatedAt = response.headers.get("X-Updated-At");
+        statusEl.textContent = updatedAt
+          ? `Обновлено: ${new Date(updatedAt).toLocaleString()}`
+          : "Скриншот получен";
+      } catch (error) {
+        statusEl.textContent = "Ошибка загрузки: " + error.message;
+      }
+    }
+
+    refresh();
+    setInterval(refresh, REFRESH_MS);
+  </script>
+</body>
+</html>
